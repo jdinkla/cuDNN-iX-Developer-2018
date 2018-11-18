@@ -1,12 +1,12 @@
 # README
 
-Beispielcode für den Artikel "Unter der Haube" aus der ix-Developer "Maschinelles Lernen" 12/2018.
+Beispielcode für den Artikel "Unter der Haube" aus der [iX-Developer "Maschinelles Lernen"](https://shop.heise.de/zeitschriften/ix/sonderhefte) 12/2018.
 
 ## Benötigt
 
 Um das Beispiel in diesem Repository auf einem Rechner laufen zu lassen, müssen die folgenden Programme zur Verfügung stehen.
 
-1. Ein C++-Compiler, wie z. B. von Microsoft Visual Studio Community 2017.
+1. Ein C++-Compiler, wie z. B. von [Microsoft Visual Studio Community 2017](https://visualstudio.microsoft.com/vs/community/).
 2. Die Entwicklungsumgebung [NVIDIA CUDA](https://developer.nvidia.com/cuda-downloads), bevorzugt die neueste Version (zum Zeitpunkt der Erstellung die Version 10).
 3. Die Bibliothek [NVIDIA cuDNN](https://developer.nvidia.com/cudnn). Achtung, hier muss die Version zur gewählten Version des CUDA-SDKs passen. 
 
