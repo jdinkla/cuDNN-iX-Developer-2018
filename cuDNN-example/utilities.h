@@ -6,7 +6,7 @@
 #include <cstdlib>
 
 // taken from https://stackoverflow.com/questions/14038589/what-is-the-canonical-way-to-check-for-errors-using-the-cuda-runtime-api/14038590#14038590
-#define check() { gpuAssert(__FILE__, __LINE__); }
+#define check_cuda() { gpuAssert(__FILE__, __LINE__); }
 inline void gpuAssert(const char *file, int line, bool abort = true)
 {
     cudaError_t code = cudaGetLastError();

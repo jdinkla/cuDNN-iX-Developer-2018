@@ -1,64 +1,31 @@
+/*
+ *
+ * (c) 2018 
+ */
+
+#include <stdio.h>
 #include <iostream>
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "cudnn.h"
 #include "utilities.h"
-#include <stdio.h>
+#include "Parameters.h"
 
 using namespace std;
 
-int cuDNN() {
-    const int w = 1024;
-    const int h = 1024;
+cudnnConvolutionFwdAlgo_t determineBestForwardConvolution(
+    const cudnnHandle_t &handle,
+    const cudnnTensorDescriptor_t &xDesc,
+    const cudnnFilterDescriptor_t &wDesc,
+    const cudnnConvolutionDescriptor_t &convDesc,
+    const cudnnTensorDescriptor_t &yDesc)
+{
     cudnnStatus_t result;
-    cudnnHandle_t handle;
-    result = cudnnCreate(&handle);
-    check(result);
-
-    std::cout << "Got handle" << std::endl;
-
     int convolutionForwardAlgorithmMaxCount = 0;
     result = cudnnGetConvolutionForwardAlgorithmMaxCount(handle, &convolutionForwardAlgorithmMaxCount);
     check(result);
     printf("convolutionForwardAlgorithmMaxCount = %d\n", convolutionForwardAlgorithmMaxCount);
-
-    cudnnTensorDescriptor_t xDesc;
-    result = cudnnCreateTensorDescriptor(&xDesc);
-    check(result);
-
-    result = cudnnSetTensor4dDescriptor(xDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, 1, w, h);
-    check(result);
-
-    cudnnFilterDescriptor_t wDesc;
-    result = cudnnCreateFilterDescriptor(&wDesc);
-    check(result);
-
-    result = cudnnSetFilter4dDescriptor(wDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, 1, 1, 5, 5);
-    check(result);
-
-    cudnnConvolutionDescriptor_t convDesc;
-    result = cudnnCreateConvolutionDescriptor(&convDesc);
-    check(result);
-
-    result = cudnnSetConvolution2dDescriptor(
-        convDesc,
-        0, //                             pad_h,
-        0, //                             pad_w,
-        2, //                             u,
-        2, // int                             v,
-        w, //                           dilation_h,
-        h, // int                             dilation_w,
-        CUDNN_CONVOLUTION,
-        CUDNN_DATA_FLOAT);
-    check(result);
-
-    cudnnTensorDescriptor_t yDesc;
-    result = cudnnCreateTensorDescriptor(&yDesc);
-    check(result);
-
-    result = cudnnSetTensor4dDescriptor(yDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, 1, w, h);
-    check(result);
 
     const int requestedAlgoCount = 3;
     int returnedAlgoCount;
@@ -78,8 +45,64 @@ int cuDNN() {
         printf(" determinism %d\n", current.determinism);
         printf(" mathType %d\n", current.mathType);
     }
+    return perfResults[0].algo;
+}
 
-    const cudnnConvolutionFwdAlgo_t algorithm = perfResults[0].algo;
+int cuDNN(Parameters& p) {
+
+    const int n = 2;
+    const int k = 1;
+    const int c = 1;
+
+    // Create a handle
+    cudnnStatus_t result;
+    cudnnHandle_t handle;
+    result = cudnnCreate(&handle);
+    check(result);
+    std::cout << "Got handle" << std::endl;
+
+    // Create the cuDNN resources
+    cudnnTensorDescriptor_t xDesc;
+    result = cudnnCreateTensorDescriptor(&xDesc);
+    check(result);
+
+    result = cudnnSetTensor4dDescriptor(xDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, n, c, p.w, p.h);
+    check(result);
+
+    cudnnFilterDescriptor_t wDesc;
+    result = cudnnCreateFilterDescriptor(&wDesc);
+    check(result);
+
+    result = cudnnSetFilter4dDescriptor(wDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, k, c, p.fw, p.fh);
+    check(result);
+
+    cudnnConvolutionDescriptor_t convDesc;
+    result = cudnnCreateConvolutionDescriptor(&convDesc);
+    check(result);
+
+    result = cudnnSetConvolution2dDescriptor(
+        convDesc,
+        0, //                             pad_h,
+        0, //                             pad_w,
+        2, //                             u,
+        2, // int                             v,
+        p.w, //                           dilation_h,
+        p.h, // int                             dilation_w,
+        CUDNN_CONVOLUTION,
+        CUDNN_DATA_FLOAT);
+    check(result);
+
+    cudnnTensorDescriptor_t yDesc;
+    result = cudnnCreateTensorDescriptor(&yDesc);
+    check(result);
+
+    result = cudnnSetTensor4dDescriptor(yDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, k, c, p.fw, p.fh);
+    check(result);
+
+    // Determine the algorithm
+    const cudnnConvolutionFwdAlgo_t algorithm = determineBestForwardConvolution(handle, xDesc, wDesc, convDesc, yDesc);
+    std::cout << "The used algorithm is " << algorithm << std::endl;
+
     size_t workspace_bytes = 0;
     result = cudnnGetConvolutionForwardWorkspaceSize(handle, xDesc, wDesc, convDesc, yDesc, algorithm, &workspace_bytes);
     check(result);
@@ -98,13 +121,22 @@ int cuDNN() {
     void* d_workspace = nullptr;
     cudaMalloc(&d_workspace, workspace_bytes);
 
-    const int image_bytes = 1 * 1 * 1024 * 1024 * sizeof(float);
+    // Allocate memory on device
+    const int image_bytes = n * c * p.w * p.h * sizeof(float);
+    const int w_bytes = p.fw * p.fh * sizeof(float);
+    const int y_bytes = p.fw * p.fh * sizeof(float);
 
     float* d_image = nullptr;
+    cudaMalloc(&d_image, image_bytes);
+    check_cuda();
+
     float* d_w = nullptr;
+    cudaMalloc(&d_w, w_bytes);
+    check_cuda();
+
     float* d_y = nullptr;
-    // cudaMalloc(&d_input, image_bytes);
-    // check_cuda();
+    cudaMalloc(&d_y, y_bytes);
+    check_cuda();
 
     const float alpha = 1, beta = 0;
     result = cudnnConvolutionForward(
@@ -135,7 +167,17 @@ int cuDNN() {
     result = cudnnDestroyFilterDescriptor(wDesc);
     check(result);
 
+    // destroy CUDA resources
+    cudaFree(d_image);
+    check_cuda();
 
+    cudaFree(d_w);
+    check_cuda();
+
+    cudaFree(d_y);
+    check_cuda();
+
+    // Destroy the handle
     result = cudnnDestroy(handle);
     check(result);
 
