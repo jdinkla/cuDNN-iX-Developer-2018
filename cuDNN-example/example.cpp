@@ -1,8 +1,10 @@
 /*
+ * Code for the article "Unter der Haube" from the german magazine iX-Developer "Maschinelles Lernen"
  *
- * (c) 2018 
+ * See https://github.com/jdinkla/cuDNN-iX-Developer-2018
+ *
+ * (c) 2018 Jörn Dinkla, https://www.dinkla.net
  */
-
 #include <stdio.h>
 #include <iostream>
 
