@@ -82,11 +82,11 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CudnnExample.cpp" />
     <ClCompile Include="cuDNN_Example.cpp" />
-    <ClCompile Include="example.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="example.h" />
+    <ClInclude Include="CudnnExample.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="utilities.h" />
   </ItemGroup>

@@ -5,24 +5,18 @@
  *
  * (c) 2018 Jörn Dinkla, https://www.dinkla.net
  */
-#include <iostream>
 
-#include "utilities.h"
-#include "example.h"
+#include "CudnnExample.h"
 #include "Parameters.h"
 
-using namespace std;
-
 int main(int argc, char** argv) {
-
-    std::cout << "Hi" << std::endl;
-
     Parameters p;
-    p.w = 1024;
-    p.h = 1024;
+    p.w = 16;
+    p.h = 16;
     p.fw = 5;
     p.fh = 5;
 
-    cuDNN(p);
+    CudnnExample cudnnExample(p);
+    cudnnExample.run();
     return 0;
 }
