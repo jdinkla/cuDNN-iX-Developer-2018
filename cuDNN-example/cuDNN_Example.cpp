@@ -17,9 +17,16 @@ int main(int argc, char** argv) {
     p.tensor_c = 1;
 
     p.filter_w = 2;
-    p.fh = 2;
+    p.filter_h = 2;
     p.filter_k = 1;
     p.filter_c = 1;
+
+    p.padding_h = 1;
+    p.padding_w = 1;
+    p.stride_h = 1;
+    p.stride_w = 1;
+    p.dilation_h = 1;
+    p.dilation_w = 1;
 
     CudnnExample cudnnExample(p);
     cudnnExample.run();

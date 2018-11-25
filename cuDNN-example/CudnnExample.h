@@ -18,6 +18,9 @@
 
 using namespace std;
 
+#define REQUESTED_NUMBER_OF_ALGORITHMS 3
+
+
 class CudnnExample {
 
 private:
@@ -78,23 +81,29 @@ protected:
         check_cudnn(result);
 
         result = cudnnSetFilter4dDescriptor(wDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW,
-            params.filter_k, params.filter_c, params.filter_w, params.filter_h);
+            params.filter_k, params.filter_c, params.filter_h, params.filter_w);
         check_cudnn(result);
 
         result = cudnnSetConvolution2dDescriptor(
             convDesc,
-            0, //                             pad_h,
-            0, //                             pad_w,
-            2, //                             u,
-            2, // int                             v,
-            params.tensor_w, //                dilation_h,
-            params.tensor_h, //                dilation_w,
+            params.padding_h,  //  pad_h,
+            params.padding_w,  //  pad_w,
+            params.stride_h,   //  u,
+            params.stride_w,   //  v,
+            params.dilation_h, //  dilation_h,
+            params.dilation_w, //  dilation_w
             CUDNN_CONVOLUTION,
             CUDNN_DATA_FLOAT);
         check_cudnn(result);
 
+        result = cudnnGetConvolution2dForwardOutputDim(convDesc, xDesc, wDesc,
+            &params.out_n, &params.out_c, &params.out_h, &params.out_w);
+
+        cout << "cudnnGetConvolution2dForwardOutputDim returned n= " << params.out_n
+            << ", c=" << params.out_c << ", h=" << params.out_h << ", w=" << params.out_w << endl;
+
         result = cudnnSetTensor4dDescriptor(yDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT,
-            params.filter_k, params.filter_c, params.filter_w, params.filter_h);
+            params.out_n, params.out_c, params.out_h, params.out_w);
         check_cudnn(result);
     }
 
@@ -104,28 +113,28 @@ protected:
         result = cudnnGetConvolutionForwardAlgorithmMaxCount(handle, &convolutionForwardAlgorithmMaxCount);
         check_cudnn(result);
         printf("convolutionForwardAlgorithmMaxCount = %d\n", convolutionForwardAlgorithmMaxCount);
+        
+        cudnnConvolutionFwdAlgoPerf_t algorithms[REQUESTED_NUMBER_OF_ALGORITHMS];
+        printf("requested_number_of_algorithms = %d\n", REQUESTED_NUMBER_OF_ALGORITHMS);
 
-        const int requestedAlgoCount = 3;
-        cudnnConvolutionFwdAlgoPerf_t perfResults[requestedAlgoCount];
-        printf("requestedAlgoCount = %d\n", requestedAlgoCount);
-
-        int returnedAlgoCount;
-        result = cudnnFindConvolutionForwardAlgorithm(handle, xDesc, wDesc, convDesc, yDesc, requestedAlgoCount, &returnedAlgoCount, (cudnnConvolutionFwdAlgoPerf_t*)&perfResults);
+        int returned_number_of_algorithms;
+        result = cudnnFindConvolutionForwardAlgorithm(handle, xDesc, wDesc, convDesc, yDesc,
+            REQUESTED_NUMBER_OF_ALGORITHMS, &returned_number_of_algorithms, (cudnnConvolutionFwdAlgoPerf_t*)&algorithms);
         check_cudnn(result);
-        printf("returnedAlgoCount = %d\n", returnedAlgoCount);
+        printf("returned_number_of_algorithms = %d\n", returned_number_of_algorithms);
 
-        for (int i = 0; i < returnedAlgoCount; i++)
+        for (int i = 0; i < returned_number_of_algorithms; i++)
         {
-            cudnnConvolutionFwdAlgoPerf_t current = perfResults[i];
-            printf("---- %d\n", i);
-            printf(" algo %d\n", current.algo);
-            printf(" status %d\n", current.status);
-            printf(" time %f\n", current.time);
-            printf(" memory %zd\n", current.memory);
-            printf(" determinism %d\n", current.determinism);
-            printf(" mathType %d\n", current.mathType);
+            cudnnConvolutionFwdAlgoPerf_t current = algorithms[i];
+            cout << "---- " << i << endl
+                << " algo " << current.algo << endl
+                << " status " << current.status << endl
+                << " time " << current.time << endl
+                << " memory " << current.memory << endl
+                << " determinism " << current.determinism << endl
+                << " mathType " << current.mathType << endl;
         }
-        algo = perfResults[0].algo;
+        algo = algorithms[0].algo;
     }
 
     void setUpWorkspace() {

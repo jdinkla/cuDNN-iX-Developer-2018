@@ -19,6 +19,18 @@ struct Parameters {
     int filter_k;
     int filter_c;
 
+    int padding_h;
+    int padding_w;
+    int stride_h;
+    int stride_w;
+    int dilation_h;
+    int dilation_w;
+
+    int out_n;
+    int out_c;
+    int out_h;
+    int out_w;
+
     inline int get_tensor_bytes() {
         return tensor_n * tensor_c * tensor_h * tensor_w * sizeof(float);
     }
