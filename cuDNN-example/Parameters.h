@@ -9,9 +9,22 @@
 
 struct Parameters {
 
-    int w;
-    int h;
-    int fw;
-    int fh;
+    int tensor_w;
+    int tensor_h;
+    int tensor_n;
+    int tensor_c;
+
+    int filter_w;
+    int filter_h;
+    int filter_k;
+    int filter_c;
+
+    inline int get_tensor_bytes() {
+        return tensor_n * tensor_c * tensor_h * tensor_w * sizeof(float);
+    }
+
+    inline int get_filter_bytes() {
+        return filter_k * filter_c * filter_h * filter_w * sizeof(float);
+    }
 
 };

@@ -11,10 +11,15 @@
 
 int main(int argc, char** argv) {
     Parameters p;
-    p.w = 16;
-    p.h = 16;
-    p.fw = 5;
-    p.fh = 5;
+    p.tensor_w = 16;
+    p.tensor_h = 16;
+    p.tensor_n = 1;
+    p.tensor_c = 1;
+
+    p.filter_w = 2;
+    p.fh = 2;
+    p.filter_k = 1;
+    p.filter_c = 1;
 
     CudnnExample cudnnExample(p);
     cudnnExample.run();

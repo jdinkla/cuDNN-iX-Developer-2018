@@ -20,7 +20,7 @@ using namespace std;
 
 class CudnnExample {
 
-    Parameters params;
+private:
 
     cudnnHandle_t handle;
     cudnnTensorDescriptor_t xDesc;
@@ -37,25 +37,13 @@ class CudnnExample {
     float* d_w = nullptr;
     float* d_y = nullptr;
 
-    int image_bytes;
-    int w_bytes;
-    int y_bytes;
+public:
 
     const float alpha = 1, beta = 0;
-
-    // TODO
-    int n = 1;
-    int c = 1;
-    int k = 1;
-
-public:
+    Parameters params;
 
     CudnnExample(Parameters& params) {
         this->params = params;
-
-        image_bytes = n * c * params.w * params.h * sizeof(float);
-        w_bytes = params.fw * params.fh * sizeof(float);
-        y_bytes = params.fw * params.fh * sizeof(float);
     }
 
     void run() {
@@ -82,28 +70,15 @@ protected:
 
     void allocateCuda();
 
-    void allocateCudnn() {
-        cudnnStatus_t result = cudnnCreate(&handle);
-        check_cudnn(result);
-
-        result = cudnnCreateTensorDescriptor(&xDesc);
-        check_cudnn(result);
-
-        result = cudnnCreateFilterDescriptor(&wDesc);
-        check_cudnn(result);
-
-        result = cudnnCreateConvolutionDescriptor(&convDesc);
-        check_cudnn(result);
-
-        result = cudnnCreateTensorDescriptor(&yDesc);
-        check_cudnn(result);
-    }
+    void allocateCudnn();
 
     void setUpCudnn() {
-        cudnnStatus_t result = cudnnSetTensor4dDescriptor(xDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, n, c, params.w, params.h);
+        cudnnStatus_t result = cudnnSetTensor4dDescriptor(xDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT,
+            params.tensor_n, params.tensor_c, params.tensor_h, params.tensor_w);
         check_cudnn(result);
 
-        result = cudnnSetFilter4dDescriptor(wDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, k, c, params.fw, params.fh);
+        result = cudnnSetFilter4dDescriptor(wDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW,
+            params.filter_k, params.filter_c, params.filter_w, params.filter_h);
         check_cudnn(result);
 
         result = cudnnSetConvolution2dDescriptor(
@@ -112,13 +87,14 @@ protected:
             0, //                             pad_w,
             2, //                             u,
             2, // int                             v,
-            params.w, //                           dilation_h,
-            params.h, // int                             dilation_w,
+            params.tensor_w, //                dilation_h,
+            params.tensor_h, //                dilation_w,
             CUDNN_CONVOLUTION,
             CUDNN_DATA_FLOAT);
         check_cudnn(result);
 
-        result = cudnnSetTensor4dDescriptor(yDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, k, c, params.fw, params.fh);
+        result = cudnnSetTensor4dDescriptor(yDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT,
+            params.filter_k, params.filter_c, params.filter_w, params.filter_h);
         check_cudnn(result);
     }
 
@@ -189,22 +165,7 @@ protected:
         check_cudnn(result);
     }
 
-    void freeCudnn() {
-        cudnnStatus_t result = cudnnDestroyConvolutionDescriptor(convDesc);
-        check_cudnn(result);
-
-        result = cudnnDestroyTensorDescriptor(xDesc);
-        check_cudnn(result);
-
-        result = cudnnDestroyTensorDescriptor(yDesc);
-        check_cudnn(result);
-
-        result = cudnnDestroyFilterDescriptor(wDesc);
-        check_cudnn(result);
-
-        result = cudnnDestroy(handle);
-        check_cudnn(result);
-    }
+    void freeCudnn();
 
     void freeCuda();
 

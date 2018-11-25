@@ -8,14 +8,48 @@
 
 #include "CudnnExample.h"
 
+void CudnnExample::allocateCudnn() {
+    cudnnStatus_t result = cudnnCreate(&handle);
+    check_cudnn(result);
+
+    result = cudnnCreateTensorDescriptor(&xDesc);
+    check_cudnn(result);
+
+    result = cudnnCreateFilterDescriptor(&wDesc);
+    check_cudnn(result);
+
+    result = cudnnCreateConvolutionDescriptor(&convDesc);
+    check_cudnn(result);
+
+    result = cudnnCreateTensorDescriptor(&yDesc);
+    check_cudnn(result);
+}
+
+void CudnnExample::freeCudnn() {
+    cudnnStatus_t result = cudnnDestroyConvolutionDescriptor(convDesc);
+    check_cudnn(result);
+
+    result = cudnnDestroyTensorDescriptor(xDesc);
+    check_cudnn(result);
+
+    result = cudnnDestroyTensorDescriptor(yDesc);
+    check_cudnn(result);
+
+    result = cudnnDestroyFilterDescriptor(wDesc);
+    check_cudnn(result);
+
+    result = cudnnDestroy(handle);
+    check_cudnn(result);
+}
+
 void CudnnExample::allocateCuda() {
-    cudaMalloc(&d_image, image_bytes);
+    cudaMalloc(&d_image, params.get_tensor_bytes());
     check_cuda();
 
-    cudaMalloc(&d_w, w_bytes);
+    cudaMalloc(&d_w, params.get_filter_bytes());
     check_cuda();
 
-    cudaMalloc(&d_y, y_bytes);
+    cudaMalloc(&d_y, params.get_filter_bytes());
     check_cuda();
 }
 
