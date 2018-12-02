@@ -24,7 +24,9 @@ Bibliotheken, Lib's und DLLs.
 
 Das Beispielprojekt kann mit Visual Studio Code geöffnet und ausgeführt werden.
 
-## Mit den Testdaten im Projekt ergibt sich zum Beispiel die folgende Berechnung in Pseudocode:
+## Überprüfung der Korrektheit
+
+Mit den Testdaten im Projekt ergibt sich zum Beispiel die folgende Berechnung in Pseudocode:
 
 d_y[0, 0, 3, 1] = d_image[[1,1],[1,2],[2,1],[2,2]] * d_w[[0,0],[0,1],[1,0],[1,1]] = 0 * 5 + 1 * 6 + 2 * 9 + 3 * 10 = 54
 
