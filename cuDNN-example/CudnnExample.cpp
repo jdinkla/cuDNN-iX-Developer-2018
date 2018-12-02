@@ -105,7 +105,7 @@ void CudnnExample::freeCudnn() {
 void CudnnExample::runAlgorithm() {
     cudnnStatus_t result = cudnnConvolutionForward(
         handle,
-        &alpha,
+        &params.alpha,
         xDesc,
         d_image,
         wDesc,
@@ -114,7 +114,7 @@ void CudnnExample::runAlgorithm() {
         algo,
         d_workspace,
         workspace_bytes,
-        &beta,
+        &params.beta,
         yDesc,
         d_y);
     check_cudnn(result);

@@ -31,6 +31,9 @@ struct Parameters {
     int out_h;
     int out_w;
 
+    float alpha;
+    float beta;
+
     inline int get_tensor_bytes() {
         return tensor_n * tensor_c * tensor_h * tensor_w * sizeof(float);
     }

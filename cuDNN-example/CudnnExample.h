@@ -29,16 +29,15 @@ private:
     cudnnConvolutionFwdAlgo_t algo;
 
     void* d_workspace = nullptr;
-    size_t workspace_bytes;
+    size_t workspace_bytes = 0;
 
     float* d_image = nullptr;
     float* d_w = nullptr;
     float* d_y = nullptr;
 
-public:
-
-    const float alpha = 1, beta = 0;
     Parameters params;
+
+public:
 
     CudnnExample(Parameters& params) {
         this->params = params;

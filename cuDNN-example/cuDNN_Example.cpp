@@ -28,6 +28,9 @@ int main(int argc, char** argv) {
     p.dilation_h = 1;
     p.dilation_w = 1;
 
+    p.alpha = 1.0;
+    p.beta = 0.0;
+
     CudnnExample cudnnExample(p);
     cudnnExample.run();
     return 0;
