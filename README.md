@@ -2,6 +2,8 @@
 
 Beispielcode für den Artikel "Unter der Haube" aus der [iX-Developer "Maschinelles Lernen"](https://shop.heise.de/zeitschriften/ix/sonderhefte) 12/2018.
 
+Code for the article "Unter der Haube" from the german magazine iX-Developer "Maschinelles Lernen".
+
 ## Benötigt
 
 Um das Beispiel in diesem Repository auf einem Rechner laufen zu lassen, müssen die folgenden Programme zur Verfügung stehen.
@@ -22,8 +24,10 @@ Bibliotheken, Lib's und DLLs.
 
 Das Beispielprojekt kann mit Visual Studio Code geöffnet und ausgeführt werden.
 
-```bash
-TODO Beispiel
-```
+## Mit den Testdaten im Projekt ergibt sich zum Beispiel die folgende Berechnung in Pseudocode:
+
+d_y[0, 0, 3, 1] = d_image[[1,1],[1,2],[2,1],[2,2]] * d_w[[0,0],[0,1],[1,0],[1,1]] = 0 * 5 + 1 * 6 + 2 * 9 + 3 * 10 = 54
 
 [Jörn Dinkla](https://www.dinkla.net)
+
+(c) 2018 Jörn Dinkla, https://www.dinkla.net
