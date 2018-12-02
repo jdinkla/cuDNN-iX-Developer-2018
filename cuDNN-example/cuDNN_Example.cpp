@@ -11,8 +11,8 @@
 
 int main(int argc, char** argv) {
     Parameters p;
-    p.tensor_w = 16;
-    p.tensor_h = 16;
+    p.tensor_w = 4;
+    p.tensor_h = 4;
     p.tensor_n = 1;
     p.tensor_c = 1;
 

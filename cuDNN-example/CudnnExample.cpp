@@ -15,7 +15,8 @@
 
 using namespace std;
 
-void CudnnExample::allocateCudnn() {
+void CudnnExample::allocateCudnn()
+{
     cudnnStatus_t result = cudnnCreate(&handle);
     check_cudnn(result);
 
@@ -32,18 +33,20 @@ void CudnnExample::allocateCudnn() {
     check_cudnn(result);
 }
 
-void CudnnExample::allocateCuda() {
-    cudaMalloc(&d_image, params.get_tensor_bytes());
+void CudnnExample::allocateCuda()
+{
+    cudaMallocManaged(&d_image, params.get_tensor_bytes());
     check_cuda();
 
-    cudaMalloc(&d_w, params.get_filter_bytes());
+    cudaMallocManaged(&d_w, params.get_filter_bytes());
     check_cuda();
 
-    cudaMalloc(&d_y, params.get_filter_bytes());
+    cudaMallocManaged(&d_y, params.get_filter_bytes());
     check_cuda();
 }
 
-void CudnnExample::determineBestForwardConvolution() {
+void CudnnExample::determineBestForwardConvolution()
+{
     cudnnStatus_t result;
     int convolutionForwardAlgorithmMaxCount = 0;
     result = cudnnGetConvolutionForwardAlgorithmMaxCount(handle, &convolutionForwardAlgorithmMaxCount);
@@ -73,7 +76,67 @@ void CudnnExample::determineBestForwardConvolution() {
     algo = algorithms[0].algo;
 }
 
-void CudnnExample::freeCuda() {
+void CudnnExample::fillWithExampleData()
+{
+    cout << "fill tensor" << endl;
+    for (int n=0; n<params.tensor_n; n++)
+    {
+        for (int c = 0; c < params.tensor_c; c++)
+        {
+            for (int h = 0; h < params.tensor_h; h++)
+            {
+                for (int w = 0; w < params.tensor_w; w++)
+                {
+                    const int i = params.get_tensor_index(n, c, h, w);
+                    const float v = (float) i;
+                    cout << n << "," << c << "," << h << "," << w << " [" << i << "]: " << v << endl;
+                    d_image[i] = v;
+                }
+            }
+        }
+    }
+
+    cout << "fill w" << endl;
+    for (int k = 0; k < params.filter_k; k++)
+    {
+        for (int c = 0; c < params.filter_c; c++)
+        {
+            for (int h = 0; h < params.filter_h; h++)
+            {
+                for (int w = 0; w < params.filter_w; w++)
+                {
+                    const int i = params.get_filter_index(k, c, h, w);
+                    const float v = (float) i;
+                    cout << k << "," << c << "," << h << "," << w << " [" << i << "]: " << v << endl;
+                    d_w[i] = v;
+                }
+            }
+        }
+    }
+
+    cout << "fill y" << endl;
+    for (int n = 0; n < params.out_n; n++)
+    {
+        for (int c = 0; c < params.out_c; c++)
+        {
+            for (int h = 0; h < params.out_h; h++)
+            {
+                for (int w = 0; w < params.out_w; w++)
+                {
+                    const int i = params.get_out_index(n, c, h, w);
+                    const float v = 0.0f;
+                    cout << n << "," << c << "," << h << "," << w << " [" << i << "]: " << v << endl;
+                    d_y[i] = v;
+                }
+            }
+        }
+    }
+
+    cudaDeviceSynchronize();
+}
+
+void CudnnExample::freeCuda()
+{
     cudaFree(d_image);
     check_cuda();
 
@@ -84,7 +147,8 @@ void CudnnExample::freeCuda() {
     check_cuda();
 }
 
-void CudnnExample::freeCudnn() {
+void CudnnExample::freeCudnn()
+{
     cudnnStatus_t result = cudnnDestroyConvolutionDescriptor(convDesc);
     check_cudnn(result);
 
@@ -102,7 +166,31 @@ void CudnnExample::freeCudnn() {
 
 }
 
-void CudnnExample::runAlgorithm() {
+void CudnnExample::reportResult()
+{
+    cudaDeviceSynchronize();
+
+    cout << "fill y" << endl;
+    for (int n = 0; n < params.out_n; n++)
+    {
+        for (int c = 0; c < params.out_c; c++)
+        {
+            for (int h = 0; h < params.out_h; h++)
+            {
+                for (int w = 0; w < params.out_w; w++)
+                {
+                    const int i = params.get_out_index(n, c, h, w);
+                    const float v = d_y[i];
+                    cout << n << "," << c << "," << h << "," << w << " [" << i << "]: " << v << endl;
+                    d_y[i] = v;
+                }
+            }
+        }
+    }
+}
+
+void CudnnExample::runAlgorithm()
+{
     cudnnStatus_t result = cudnnConvolutionForward(
         handle,
         &params.alpha,
@@ -120,7 +208,8 @@ void CudnnExample::runAlgorithm() {
     check_cudnn(result);
 }
 
-void CudnnExample::setUpCudnn() {
+void CudnnExample::setUpCudnn()
+{
     cudnnStatus_t result = cudnnSetTensor4dDescriptor(xDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT,
         params.tensor_n, params.tensor_c, params.tensor_h, params.tensor_w);
     check_cudnn(result);
@@ -152,7 +241,8 @@ void CudnnExample::setUpCudnn() {
     check_cudnn(result);
 }
 
-void CudnnExample::setUpWorkspace() {
+void CudnnExample::setUpWorkspace()
+{
     workspace_bytes = 0;
     cudnnStatus_t result = cudnnGetConvolutionForwardWorkspaceSize(handle, xDesc, wDesc, convDesc, yDesc, algo, &workspace_bytes);
     check_cudnn(result);

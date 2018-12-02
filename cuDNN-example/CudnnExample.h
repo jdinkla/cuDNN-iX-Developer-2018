@@ -16,7 +16,8 @@ using namespace std;
 
 #define REQUESTED_NUMBER_OF_ALGORITHMS 3
 
-class CudnnExample {
+class CudnnExample
+{
 
 private:
 
@@ -39,26 +40,34 @@ private:
 
 public:
 
-    CudnnExample(Parameters& params) {
+    CudnnExample(Parameters& params)
+    {
         this->params = params;
     }
 
-    void run() {
-        cout << "Allocating CUDA and CUDNN ressources" << endl;
+    void run()
+    {
+        cout << "*** allocating CUDA and CUDNN ressources" << endl;
         allocateCuda();
         allocateCudnn();  
 
-        cout << "Initializing convolution" << endl;
+        cout << "*** initializing convolution" << endl;
         setUpCudnn();
+
+        cout << "*** fill with test data" << endl;
+        fillWithExampleData();
+
         determineBestForwardConvolution();
         std::cout << "The used algorithm is " << algo << std::endl;
 
         setUpWorkspace();
 
-        cout << "Running the convolution" << endl;
+        cout << "*** running the convolution" << endl;
         runAlgorithm();
 
-        cout << "Freeing up the CUDA and CUDNN ressources" << endl;
+        reportResult();
+
+        cout << "*** freeing up CUDA and CUDNN ressources" << endl;
         freeCudnn();
         freeCuda();
     }
@@ -68,6 +77,8 @@ protected:
     void allocateCuda();
 
     void allocateCudnn();
+
+    void fillWithExampleData();
 
     void setUpCudnn();
 
@@ -81,4 +92,5 @@ protected:
 
     void freeCuda();
 
+    void reportResult();
 };

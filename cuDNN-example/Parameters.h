@@ -7,7 +7,8 @@
  */
 #pragma once
 
-struct Parameters {
+struct Parameters
+{
 
     int tensor_w;
     int tensor_h;
@@ -34,12 +35,37 @@ struct Parameters {
     float alpha;
     float beta;
 
-    inline int get_tensor_bytes() {
+    inline int get_tensor_bytes()
+    {
         return tensor_n * tensor_c * tensor_h * tensor_w * sizeof(float);
     }
 
-    inline int get_filter_bytes() {
+    inline int get_filter_bytes()
+    {
         return filter_k * filter_c * filter_h * filter_w * sizeof(float);
     }
 
+    inline int get_tensor_index(int n, int c, int h, int w)
+    {
+        const int sN = tensor_c * tensor_h * tensor_w;
+        const int sC = tensor_h * tensor_w;
+        const int sH = tensor_w;
+        return n * sN + c * sC + h * sH + w;
+    }
+
+    inline int get_filter_index(int k, int c, int h, int w)
+    {
+        const int sK = filter_c * filter_h * filter_w;
+        const int sC = filter_h * filter_w;
+        const int sH = filter_w;
+        return k * sK + c * sC + h * sH + w;
+    }
+
+    inline int get_out_index(int n, int c, int h, int w)
+    {
+        const int sN = out_c * out_h * out_w;
+        const int sC = out_h * out_w;
+        const int sH = out_w;
+        return n * sN + c * sC + h * sH + w;
+    }
 };
